@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:task/calendar.dart';
-import 'package:task/person.dart';
-import 'package:task/todo.dart';
+import 'package:flow_todo/calendar.dart';
+import 'package:flow_todo/person.dart';
+import 'package:flow_todo/todo.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {

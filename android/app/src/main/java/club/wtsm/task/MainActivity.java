@@ -1,4 +1,4 @@
-package club.wtsm.task;
+package club.wtsm.todo;
 
 import io.flutter.embedding.android.FlutterActivity;
 
