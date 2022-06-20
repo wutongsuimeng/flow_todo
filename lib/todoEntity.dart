@@ -4,13 +4,26 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class Todo{
-  String title;
   String content;
   Decoration decoration=Decoration();
   //是否完成
   bool finish=false;
 
-  Todo(this.title, this.content);
+  Todo(this.content,{this.finish=false});
+
+
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> data = <String, dynamic>{};
+    data['content'] = content;
+    data['finish'] = finish;
+    return data;
+  }
+
+   Todo toTodo(Map<String, dynamic> json) {
+    content = json['content'];
+    finish = json['finish'];
+    return this;
+  }
 }
 
 //todo效果

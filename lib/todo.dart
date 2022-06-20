@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flow_todo/dao/todoDao.dart';
 import 'package:flow_todo/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flow_todo/main.dart';
@@ -15,13 +16,15 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
-  List<Todo> list=[
-    Todo("todo1", "todo1"),
-    Todo("todo2", "todo2")
-  ];
+  TodoDao todoDao=TodoDao();
+
+  late List<Todo> list;
 
   @override
   Widget build(BuildContext context) {
+    todoDao.rawQuery().then((value) => {
+      list=value
+    });
     return Scaffold(
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -48,7 +51,7 @@ class _TodoPageState extends State<TodoPage> {
                   Navigator.push(context, PopRoute(child: InputButtomWidget(
                     onEditingCompleteText: (text) {
                       setState(() {
-                        list.add(Todo(text, text));
+                        list.add(Todo(text));
                       });
                     },
                   )));
@@ -156,7 +159,7 @@ class _TodoPageState extends State<TodoPage> {
                     Navigator.push(context, PopRoute(child: ModifiedButtomWidget(
                         onEditingCompleteText: (text) {
                           setState(() {
-                            list[index]=Todo(text, text);
+                            list[index]=Todo(text);
                           });
                         },todo:list[index]
                     )));
