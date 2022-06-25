@@ -7,7 +7,7 @@ class DatabaseUtil{
     String path=join(await getDatabasesPath(),"flow_todo.db");
     Database database = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
-          await db.execute('CREATE TABLE Todo (id INTEGER PRIMARY KEY, context TEXT, finish INTEGER)');
+          await db.execute('CREATE TABLE Todo (id INTEGER PRIMARY KEY, content TEXT, finish INTEGER)');
         });
     return database;
   }

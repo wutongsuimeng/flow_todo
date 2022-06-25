@@ -4,18 +4,20 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class Todo{
+  int? id;
   String content;
   Decoration decoration=Decoration();
   //是否完成
   bool finish=false;
 
+  //todo
   Todo(this.content,{this.finish=false});
 
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> data = <String, dynamic>{};
     data['content'] = content;
-    data['finish'] = finish;
+    data['finish'] = finish?1:0;
     return data;
   }
 

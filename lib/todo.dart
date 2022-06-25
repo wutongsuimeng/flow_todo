@@ -23,6 +23,7 @@ class _TodoPageState extends State<TodoPage> {
   @override
   Widget build(BuildContext context) {
     todoDao.rawQuery().then((value) => {
+      // print(value),
       list=value
     });
     return Scaffold(
@@ -44,6 +45,7 @@ class _TodoPageState extends State<TodoPage> {
               ),
             ),
             Align(
+              //添加
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
                 child: const Icon(Icons.add),
@@ -51,7 +53,9 @@ class _TodoPageState extends State<TodoPage> {
                   Navigator.push(context, PopRoute(child: InputButtomWidget(
                     onEditingCompleteText: (text) {
                       setState(() {
-                        list.add(Todo(text));
+                        Todo todo=Todo(text);
+                        list.add(todo);
+                        todoDao.insert(todo);
                       });
                     },
                   )));
@@ -141,7 +145,11 @@ class _TodoPageState extends State<TodoPage> {
                         else if(direction==DismissDirection.endToStart){
                           print("删除");
                           setState(() {
-                            list.removeAt(index);
+                            int? id=list[index].id;
+                            if(id!=null){
+                              todoDao.delete(id);
+                              list.removeAt(index);
+                            }
                           });
                         }
                       },
@@ -159,7 +167,9 @@ class _TodoPageState extends State<TodoPage> {
                     Navigator.push(context, PopRoute(child: ModifiedButtomWidget(
                         onEditingCompleteText: (text) {
                           setState(() {
-                            list[index]=Todo(text);
+                            Todo todo=list[index];
+                            todo.content=text;
+                            todoDao.update(todo);
                           });
                         },todo:list[index]
                     )));
@@ -190,9 +200,11 @@ class _TodoPageState extends State<TodoPage> {
   //完成事件
   void finishTodo(int index){
     setState((){
-      list[index].finish=true;
+      Todo todo=list[index];
+      todo.finish=true;
+      todoDao.update(todo);
       //改变样式
-      list[index].decoration.finish();
+      todo.decoration.finish();
     });
   }
 }
