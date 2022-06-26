@@ -42,6 +42,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  //todo 添加一天，包括todo、日程、番茄钟
   final List<BottomNavigationBarItem> bottomNavItems = [
     BottomNavigationBarItem(
         icon: Icon(Icons.task),

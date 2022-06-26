@@ -7,6 +7,7 @@ import 'package:flow_todo/main.dart';
 import 'package:flow_todo/route.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flow_todo/todoEntity.dart';
+import 'package:flow_todo/tomato.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({Key? key}) : super(key: key);
@@ -16,16 +17,34 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
-  TodoDao todoDao=TodoDao();
+  TodoDao todoDao = TodoDao();
 
-  late List<Todo> list;
+  List<Todo> list = [];
+
+  @override
+  void initState() {
+    super.initState();
+    //因为切换tab后，list会重置，所以需要使用setState重新加载
+    todoDao.rawQuery().then((value) => {
+          if (list != value)
+            {
+              setState(() {
+                list = value;
+              }),
+              print(list[1].finish),
+              for (int i = 0; i < list.length; i++)
+                {
+                  if (list[i].finish)
+                    {
+                      list[i].decoration.finish(),
+                    }
+                }
+            },
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
-    todoDao.rawQuery().then((value) => {
-      // print(value),
-      list=value
-    });
     return Scaffold(
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -38,8 +57,7 @@ class _TodoPageState extends State<TodoPage> {
                 onPressed: () {
                   // TODO: 番茄钟的按钮，弹窗，能指定对某项todo开始番茄钟
                   print("番茄钟");
-                  Navigator.push(
-                      context, PopRoute(child: _ProvideWidgetState()));
+                  Navigator.push(context, PopRoute(child: TomatoPage()));
                 },
                 child: Icon(Icons.play_circle_fill),
               ),
@@ -53,7 +71,7 @@ class _TodoPageState extends State<TodoPage> {
                   Navigator.push(context, PopRoute(child: InputButtomWidget(
                     onEditingCompleteText: (text) {
                       setState(() {
-                        Todo todo=Todo(text);
+                        Todo todo = Todo(text);
                         list.add(todo);
                         todoDao.insert(todo);
                       });
@@ -87,7 +105,7 @@ class _TodoPageState extends State<TodoPage> {
                         children: <Widget>[
                           Container(
                             child: Text(
-                                list[index].content,
+                              list[index].content,
                               style: list[index].decoration.textStyle,
                             ),
                             padding: EdgeInsets.all(8),
@@ -98,7 +116,7 @@ class _TodoPageState extends State<TodoPage> {
                             child: IconButton(
                               onPressed: () {
                                 print(list[index].finish);
-                                if(!list[index].finish){
+                                if (!list[index].finish) {
                                   finishTodo(index);
                                   print("已完成");
                                 }
@@ -135,44 +153,46 @@ class _TodoPageState extends State<TodoPage> {
                         ),
                       ),
                       //滑动触发事件
-                      onDismissed: (DismissDirection direction){
+                      onDismissed: (DismissDirection direction) {
                         //左到右
                         //todo 待做，重点/完成
-                        if(direction==DismissDirection.startToEnd){
+                        if (direction == DismissDirection.startToEnd) {
                           print("todo");
                         }
                         //右到左
-                        else if(direction==DismissDirection.endToStart){
+                        else if (direction == DismissDirection.endToStart) {
                           print("删除");
                           setState(() {
-                            int? id=list[index].id;
-                            if(id!=null){
+                            int? id = list[index].id;
+                            if (id != null) {
                               todoDao.delete(id);
                               list.removeAt(index);
                             }
                           });
                         }
                       },
-                      confirmDismiss: (DismissDirection direction) async{
+                      confirmDismiss: (DismissDirection direction) async {
                         await Future.delayed(Duration(seconds: 2));
                         print('_confirmDismiss:$direction');
-                        return direction==DismissDirection.endToStart;
+                        return direction == DismissDirection.endToStart;
                       },
-                    )
-              ),
+                    )),
                 //点击事件
                 onTap: () {
                   //修改todo
-                  if(!list[index].finish){
-                    Navigator.push(context, PopRoute(child: ModifiedButtomWidget(
-                        onEditingCompleteText: (text) {
-                          setState(() {
-                            Todo todo=list[index];
-                            todo.content=text;
-                            todoDao.update(todo);
-                          });
-                        },todo:list[index]
-                    )));
+                  if (!list[index].finish) {
+                    Navigator.push(
+                        context,
+                        PopRoute(
+                            child: ModifiedButtomWidget(
+                                onEditingCompleteText: (text) {
+                                  setState(() {
+                                    Todo todo = list[index];
+                                    todo.content = text;
+                                    todoDao.update(todo);
+                                  });
+                                },
+                                todo: list[index])));
                   }
                   // DatabaseUtil b=DatabaseUtil();
                   // b.testDatabase();
@@ -198,10 +218,10 @@ class _TodoPageState extends State<TodoPage> {
   }
 
   //完成事件
-  void finishTodo(int index){
-    setState((){
-      Todo todo=list[index];
-      todo.finish=true;
+  void finishTodo(int index) {
+    setState(() {
+      Todo todo = list[index];
+      todo.finish = true;
       todoDao.update(todo);
       //改变样式
       todo.decoration.finish();
@@ -299,24 +319,25 @@ class ModifiedButtomWidget extends StatelessWidget {
   final TextEditingController controller = TextEditingController();
   Todo todo;
 
-  ModifiedButtomWidget({required this.onEditingCompleteText,required this.todo});
+  ModifiedButtomWidget(
+      {required this.onEditingCompleteText, required this.todo});
 
   @override
   Widget build(BuildContext context) {
-    controller.text=this.todo.content;
+    controller.text = this.todo.content;
     return new Scaffold(
       backgroundColor: Colors.transparent,
       body: new Column(
         children: <Widget>[
           Expanded(
               child: new GestureDetector(
-                child: new Container(
-                  color: Colors.transparent,
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              )),
+            child: new Container(
+              color: Colors.transparent,
+            ),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          )),
           new Container(
               color: Color(0xFFF4F4F4),
               padding: EdgeInsets.only(left: 16, top: 8, bottom: 8, right: 16),
