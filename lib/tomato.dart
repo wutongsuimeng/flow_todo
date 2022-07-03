@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
+import 'dart:ui';
 
 import 'package:flow_todo/dao/todoDao.dart';
 import 'package:flow_todo/route.dart';
@@ -56,7 +59,7 @@ class _TomatoPageState extends State<TomatoPage> {
           children: <Widget>[
             Row(
               children: [
-                Text("执行任务:"),
+                Text("执行任务："),
                 MaterialButton(
                   color: Colors.blue,
                   onPressed: () {
@@ -79,7 +82,7 @@ class _TomatoPageState extends State<TomatoPage> {
             ),
             Row(
               children: [
-                Text("开始时间:"),
+                Text("开始时间："),
                 MaterialButton(
                   color: Colors.red,
                   onPressed: () {
@@ -104,10 +107,11 @@ class _TomatoPageState extends State<TomatoPage> {
                     textTheme: ButtonTextTheme.normal,
                     onPressed: () {
                       print("启动");
-                      Navigator.push(context,PopRoute(child: _TomatoDoPageStateWidget(
-                        todos: picks,
-                        time: selectTime,
-                      )));
+                      Navigator.push(
+                          context,
+                          PopRoute(
+                              child: _TomatoDoPageStateWidget(
+                                  todos: picks, time: selectTime)));
                     })
               ],
             ),
@@ -118,24 +122,101 @@ class _TomatoPageState extends State<TomatoPage> {
   }
 }
 
-class _TomatoDoPageStateWidget extends StatelessWidget{
+class _TomatoDoPageStateWidget extends StatefulWidget {
   //选择的任务
   List<int> todos = [];
 
   //选择的时间
-  int time =5;
+  int time = 5;
 
-  _TomatoDoPageStateWidget({required this.todos,required this.time});
+  _TomatoDoPageStateWidget({required this.todos, required this.time});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _TomatoDoPageState(todos, time);
+  }
+}
+
+class _TomatoDoPageState extends State<_TomatoDoPageStateWidget> {
+  ///声明变量
+  late Timer _timer;
+
+  ///记录当前的时间
+  late int time;
+  List<int> todos;
+  int totalTime;
+
+  _TomatoDoPageState(this.todos, this.totalTime);
+
+  @override
+  void initState() {
+    super.initState();
+    time = totalTime * 60;
+
+    ///循环执行
+    ///间隔1秒
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        time--;
+      });
+
+      ///到5秒后停止
+      if (time <= 0) {
+        _timer.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    ///取消计时器
+    _timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Container(
-        child: Text("倒计时:"+todos.toString()+","+time.toString()),
+      appBar: AppBar(
+        title: Text("倒计时"),
       ),
+      backgroundColor: Colors.white,
+
+      ///填充布局
+      body: Container(
+          padding: EdgeInsets.all(100),
+          width: double.infinity,
+          height: double.infinity,
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              ///层叠布局将进度与文字叠在一起
+              Stack(
+                ///子Widget居中
+                alignment: Alignment.center,
+                children: [
+                  ///圆形进度
+                  Container(
+                    width: 180,
+                    height: 180,
+                    child: CircularProgressIndicator(
+                      ///当前指示的进度
+                      value: time / (totalTime * 60),
+                      strokeWidth: 4,
+                    ),
+                  ),
+
+                  ///显示的文本
+                  Text(
+                    "${time ~/ 60}:${(time % 60).toInt()}",
+                    style: TextStyle(
+                      fontSize: 70,
+                    ),
+                  ),
+                ],
+              )
+            ],
+          )),
     );
   }
-
-
 }
