@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:flow_todo/dao/todoDao.dart';
 import 'package:flow_todo/route.dart';
+import 'package:flow_todo/todoEntity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_picker/Picker.dart';
 
@@ -15,39 +16,24 @@ class TomatoPage extends StatefulWidget {
   State<StatefulWidget> createState() => _TomatoPageState();
 }
 
-//已选择的任务
-List<int> picks = [];
-int selectTime = 5;
-
 class _TomatoPageState extends State<TomatoPage> {
-  //选择的任务
-  List<PickerItem<int>> todos = [];
+  //可选择的任务
+  List<Todo> todoItems = [Todo("")];
 
-  //选择的时间
-  List<int> time = [];
+  //可选择的时间
+  List<int> timeItems = [5];
+
+  // 选择的时间
+  int selectedTime = 5;
+
+  //选择的任务
+  Todo selectedTodo = Todo("");
 
   @override
   void initState() {
+    initData();
+    //here is the async code, you can execute any async code here
     super.initState();
-    List<PickerItem<int>> tmp = [];
-    List<int> tmpTime = [];
-    TodoDao().rawQuery().then((value) => {
-          for (int i = 0; i < value.length; i++)
-            {
-              tmp.add(
-                  PickerItem(text: Text(value[i].content), value: value[i].id))
-            },
-          setState(() {
-            todos = tmp;
-          }),
-        });
-    for (int i = 5; i <= 90; i += 5) {
-      tmpTime.add(i);
-    }
-    setState(() {
-      time = tmpTime;
-      print(time);
-    });
   }
 
   @override
@@ -57,74 +43,98 @@ class _TomatoPageState extends State<TomatoPage> {
       body: Container(
         child: Column(
           children: <Widget>[
-            Row(
-              children: [
-                Text("执行任务："),
-                MaterialButton(
-                  color: Colors.blue,
-                  onPressed: () {
-                    Picker(
-                        adapter: PickerDataAdapter<int>(data: todos),
-                        hideHeader: true,
-                        title: new Text("选择执行的任务"),
-                        onConfirm: (Picker picker, List value) {
-                          // print(value.toString());
-                          // print(picker.getSelectedValues());
-                          picks.clear();
-                          for (var value1 in picker.getSelectedValues()) {
-                            picks.add(value1);
-                          }
-                          print(picks);
-                        }).showDialog(context);
-                  },
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Text("开始时间："),
-                MaterialButton(
-                  color: Colors.red,
-                  onPressed: () {
-                    Picker(
-                        adapter: PickerDataAdapter<int>(pickerdata: time),
-                        hideHeader: true,
-                        title: new Text("选择执行的时间(分钟)"),
-                        onConfirm: (Picker picker, List value) {
-                          // print(value.toString());
-                          // print(picker.getSelectedValues());
-                          selectTime = picker.getSelectedValues()[0];
-                          print(selectTime);
-                        }).showDialog(context);
-                  },
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                MaterialButton(
-                    child: Text("启动"),
-                    textTheme: ButtonTextTheme.normal,
-                    onPressed: () {
-                      print("启动");
-                      Navigator.push(
-                          context,
-                          PopRoute(
-                              child: _TomatoDoPageStateWidget(
-                                  todos: picks, time: selectTime)));
-                    })
-              ],
+            Form(
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: [
+                      Text("选择执行任务："),
+                      DropdownButton<Todo>(
+                          value: todoItems[0],
+                          items: todoItems
+                              .map<DropdownMenuItem<Todo>>((Todo value) {
+                            return DropdownMenuItem<Todo>(
+                              value: value,
+                              child: Text("$value"),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedTodo = value!;
+                            });
+                          })
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Text("开始时间："),
+                      DropdownButton<int>(
+                          value: timeItems[0],
+                          items:
+                              timeItems.map<DropdownMenuItem<int>>((int value) {
+                            return DropdownMenuItem<int>(
+                              value: value,
+                              child: Text("$value 分钟"),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedTime = value as int;
+                            });
+                          })
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      MaterialButton(
+                          child: Text("启动"),
+                          textTheme: ButtonTextTheme.normal,
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                PopRoute(
+                                    child: _TomatoDoPageStateWidget(
+                                        todos:
+                                            List<Todo>.filled(1, selectedTodo),
+                                        time: selectedTime)));
+                          })
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  void initData() async {
+    List<Todo> todoItemsTmp = [];
+    List<int> timeItemsTmp = [];
+    print("1");
+    await TodoDao().rawQuery().then((value) => {
+          todoItemsTmp = value,
+          for (int i = 5; i <= 90; i += 5)
+            {
+              timeItemsTmp.add(i),
+            },
+    print("2"),
+    todoItems = todoItemsTmp,
+          setState(() {
+            timeItems = timeItemsTmp;
+            todoItems = todoItemsTmp;
+            print(todoItems);
+            print(timeItems);
+          }),
+        });
+    print("3");
+  }
 }
 
 class _TomatoDoPageStateWidget extends StatefulWidget {
   //选择的任务
-  List<int> todos = [];
+  List<Todo> todos = [];
 
   //选择的时间
   int time = 5;
@@ -143,7 +153,7 @@ class _TomatoDoPageState extends State<_TomatoDoPageStateWidget> {
 
   ///记录当前的时间
   late int time;
-  List<int> todos;
+  List<Todo> todos;
   int totalTime;
 
   _TomatoDoPageState(this.todos, this.totalTime);

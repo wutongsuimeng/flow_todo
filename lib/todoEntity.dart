@@ -14,6 +14,11 @@ class Todo{
   Todo(this.content,{this.finish=false});
 
 
+  @override
+  String toString() {
+    return '$content';
+  }
+
   Map<String, dynamic> toMap() {
     Map<String, dynamic> data = <String, dynamic>{};
     data['content'] = content;
