@@ -40,6 +40,7 @@ dependencies:
   flutter_picker: 2.0.3
   sqflite: ^2.0.2+1
   path: ^1.8.1
+  multi_select_flutter: ^4.1.2
 
 dev_dependencies:
   flutter_test:

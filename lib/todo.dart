@@ -31,7 +31,7 @@ class _TodoPageState extends State<TodoPage> {
               setState(() {
                 list = value;
               }),
-              print(list[1].finish),
+              // print(list[1].finish),
               for (int i = 0; i < list.length; i++)
                 {
                   if (list[i].finish)

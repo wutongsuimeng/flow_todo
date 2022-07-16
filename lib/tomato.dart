@@ -8,6 +8,9 @@ import 'package:flow_todo/route.dart';
 import 'package:flow_todo/todoEntity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_picker/Picker.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
+import 'package:multi_select_flutter/util/multi_select_list_type.dart';
 
 class TomatoPage extends StatefulWidget {
   const TomatoPage({Key? key}) : super(key: key);
@@ -49,20 +52,13 @@ class _TomatoPageState extends State<TomatoPage> {
                   Row(
                     children: [
                       Text("选择执行任务："),
-                      DropdownButton<Todo>(
-                          value: todoItems[0],
-                          items: todoItems
-                              .map<DropdownMenuItem<Todo>>((Todo value) {
-                            return DropdownMenuItem<Todo>(
-                              value: value,
-                              child: Text("$value"),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedTodo = value!;
-                            });
-                          })
+                      MultiSelectDialogField(
+                        items: todoItems.map((e) => MultiSelectItem(e, e.content)).toList(),
+                        listType: MultiSelectListType.CHIP,
+                        onConfirm: (values) {
+                          print(values);
+                        },
+                      ),
                     ],
                   ),
                   Row(
