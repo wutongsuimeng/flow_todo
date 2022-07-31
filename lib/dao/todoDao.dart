@@ -16,6 +16,15 @@ class TodoDao{
     });
   }
 
+  Future<Todo> query(int id) async {
+    Database database=await DatabaseUtil.getConnection();
+    List<Map> maps = await database.rawQuery("SELECT * FROM Todo where id=?",[id]);
+    Todo todo=Todo(maps[0]['content']);
+    todo.id=maps[0]['id'];
+    todo.finish=maps[0]['finish']==1?true:false;
+    return todo;
+  }
+
   Future<int> insert(Todo todo) async{
     Database database=await DatabaseUtil.getConnection();
     return database.insert("Todo", todo.toMap());

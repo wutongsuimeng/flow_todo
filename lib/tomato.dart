@@ -30,7 +30,7 @@ class _TomatoPageState extends State<TomatoPage> {
   int selectedTime = 5;
 
   //选择的任务
-  Todo selectedTodo = Todo("");
+  List<Todo> selectedTodos = [Todo("")];
 
   @override
   void initState() {
@@ -57,6 +57,8 @@ class _TomatoPageState extends State<TomatoPage> {
                         listType: MultiSelectListType.CHIP,
                         onConfirm: (values) {
                           print(values);
+                          selectedTodos=values as List<Todo>;
+                          print(selectedTodos);
                         },
                       ),
                     ],
@@ -83,6 +85,7 @@ class _TomatoPageState extends State<TomatoPage> {
                   Row(
                     children: [
                       MaterialButton(
+                        //todo 启动按钮美化
                           child: Text("启动"),
                           textTheme: ButtonTextTheme.normal,
                           onPressed: () {
@@ -91,7 +94,7 @@ class _TomatoPageState extends State<TomatoPage> {
                                 PopRoute(
                                     child: _TomatoDoPageStateWidget(
                                         todos:
-                                            List<Todo>.filled(1, selectedTodo),
+                                            selectedTodos,
                                         time: selectedTime)));
                           })
                     ],
@@ -130,7 +133,7 @@ class _TomatoPageState extends State<TomatoPage> {
 
 class _TomatoDoPageStateWidget extends StatefulWidget {
   //选择的任务
-  List<Todo> todos = [];
+  late List<Todo> todos;
 
   //选择的时间
   int time = 5;
@@ -169,8 +172,10 @@ class _TomatoDoPageState extends State<_TomatoDoPageStateWidget> {
       ///到5秒后停止
       if (time <= 0) {
         _timer.cancel();
+        completeTodo(todos);
       }
     });
+    print("test"+todos.toString());
   }
 
   @override
@@ -202,7 +207,7 @@ class _TomatoDoPageState extends State<_TomatoDoPageStateWidget> {
                 alignment: Alignment.center,
                 children: [
                   ///圆形进度
-                  Container(
+                  SizedBox(
                     width: 180,
                     height: 180,
                     child: CircularProgressIndicator(
@@ -220,9 +225,20 @@ class _TomatoDoPageState extends State<_TomatoDoPageStateWidget> {
                     ),
                   ),
                 ],
-              )
+              ),
+              Text("正在执行的任务：${todos.map((e) => e.content).join("、")}"),
             ],
           )),
     );
+  }
+
+  void completeTodo(List<Todo> todos) {
+    TodoDao todoDao=TodoDao();
+    for (var t in todos) {
+      todoDao.query(t.id as int).then((todo) => {
+        todo.finish=true,
+        todoDao.update(todo)
+      });
+    }
   }
 }
